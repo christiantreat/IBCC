@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBCC Mobile TOC</title>
+    <style>
+        :root {
+            --primary-color: #0066cc;
+            --secondary-color: #f4f4f4;
+            --text-color: #333;
+            --highlight-color: #fffacd;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        .search-container {
+            position: sticky;
+            top: 0;
+            background-color: #fff;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid var(--primary-color);
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .system {
+            background-color: var(--secondary-color);
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .system-header {
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .system-header h2 {
+            margin: 0;
+        }
+        .system-content {
+            display: none;
+            padding: 15px;
+        }
+        .system-content.active {
+            display: block;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 0;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            display: inline-block;
+            padding: 5px 0;
+        }
+        a:hover, a:focus {
+            text-decoration: underline;
+            outline: none;
+        }
+        .highlight {
+            background-color: var(--highlight-color);
+            font-weight: bold;
+        }
+        .back-to-top {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .back-to-top:hover {
+            background-color: #004c99;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="top">IBCC Mobile Table of Contents</h1>
+        <div class="search-container">
+            <input type="text" id="search" class="search-box" placeholder="Search topics..." aria-label="Search topics">
+        </div>
+
+        <div id="content">
+            <!-- Systems and topics will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script>
+        const systems = [
+            {
+                name: "Cardiology",
+                topics: [
+                    { name: "Cardiac arrest", url: "https://emcrit.org/ibcc/post-arrest/#top" },
+                    { name: "Chest pain", url: "#" },
+                    { name: "Hypertensive emergency", url: "https://emcrit.org/ibcc/hypertensive-emergency/#top" },
+                    { name: "SCAPE (Sympathetic Crashing Acute Pulmonary Edema)", url: "https://emcrit.org/ibcc/scape/#top" },
+                    { name: "Syncope", url: "#" },
+                    { name: "ECMO", url: "https://emcrit.org/ibcc/ecmo/" },
+                    { name: "Vasopressors", url: "https://emcrit.org/ibcc/pressors/#top" },
+                    { name: "Bradycardia", url: "https://emcrit.org/ibcc/bradycardia/#top" },
+                    { name: "BRASH syndrome", url: "https://emcrit.org/ibcc/brash/#top" },
+                    { name: "Atrial fibrillation & flutter", url: "https://emcrit.org/ibcc/af/#top" },
+                    { name: "Ventricular arrhythmias", url: "https://emcrit.org/ibcc/storm/#top" },
+                    { name: "MI (type I)", url: "https://emcrit.org/ibcc/mi/#top" },
+                    { name: "Post-MI complications", url: "https://emcrit.org/ibcc/post-mi-complications/#top" },
+                    { name: "Troponin elevation in non-cardiac critical illness", url: "https://emcrit.org/ibcc/troponin/#top" },
+                    { name: "Myocarditis", url: "#" },
+                    { name: "Pericardial tamponade", url: "https://emcrit.org/ibcc/tamponade/" },
+                    { name: "Pericarditis", url: "#" },
+                    { name: "Takotsubo syndrome", url: "https://emcrit.org/ibcc/takotsubo/#top" },
+                    { name: "Undifferentiated shock", url: "https://emcrit.org/ibcc/shock/#top" },
+                    { name: "Heart failure (including cardiogenic shock)", url: "https://emcrit.org/ibcc/chf/#top" },
+                    { name: "Shock due to RV failure", url: "https://emcrit.org/ibcc/rv/#top" },
+                    { name: "Endocarditis", url: "https://emcrit.org/ibcc/endo/#top" },
+                    { name: "LV outflow tract obstruction (LVOTO)", url: "https://emcrit.org/ibcc/lvoto/" },
+                    { name: "Valvular heart disease", url: "#" }
+                ]
+            },
+          {
+                name: "Endocrinology",
+                topics: [
+                    { name: "Adrenal crisis", url: "https://emcrit.org/ibcc/adrenal-crisis/#top" },
+                    { name: "Diabetic ketoacidosis (DKA)", url: "https://emcrit.org/ibcc/dka/#top" },
+                    { name: "Hyperglycemic Hyperosmolar State (HHS)", url: "https://emcrit.org/ibcc/hhs/#top" },
+                    { name: "Glycemic control in the ICU", url: "https://emcrit.org/ibcc/glucose/#top" },
+                    { name: "Hypoglycemia", url: "https://emcrit.org/ibcc/hypoglycemia/#top" },
+                    { name: "Thyroid Storm", url: "https://emcrit.org/ibcc/thyroid-storm/#top" },
+                    { name: "Decompensated Hypothyroidism", url: "https://emcrit.org/ibcc/myxedema/#top" }
+                ]
+            },
+            {
+                name: "Gastroenterology",
+                topics: [
+                    { name: "Abdominal compartment syndrome", url: "https://emcrit.org/ibcc/abdominal-compartment-syndrome/#top" },
+                    { name: "Acalculous cholecystitis", url: "https://emcrit.org/ibcc/acalculous-cholecystitis/#top" },
+                    { name: "Community-acquired biliary sepsis", url: "https://emcrit.org/ibcc/biliary/#top" },
+                    { name: "GI hemorrhage", url: "https://emcrit.org/ibcc/gi-bleeding/#top" },
+                    { name: "Nausea & antiemetics", url: "https://emcrit.org/ibcc/antiemetic/#top" },
+                    { name: "C. difficile", url: "https://emcrit.org/ibcc/cdiff/#top" },
+                    { name: "Gastroparesis", url: "https://emcrit.org/ibcc/gastroparesis/#top" },
+                    { name: "Ileus", url: "https://emcrit.org/ibcc/ileus/#top" },
+                    { name: "Colonic pseudoobstruction (Oglivie's syndrome)", url: "https://emcrit.org/ibcc/oglivie/#top" },
+                    { name: "Acute Liver Failure (ALF)", url: "https://emcrit.org/ibcc/alf/#top" },
+                    { name: "Acute on Chronic Liver Failure (ACLF)", url: "https://emcrit.org/ibcc/aclf/#top" },
+                    { name: "Alcoholic hepatitis", url: "https://emcrit.org/ibcc/alcoholic-hepatitis/#top" },
+                    { name: "Coagulopathy in liver failure", url: "https://emcrit.org/ibcc/cirrhosis/#top" },
+                    { name: "Hepatic encephalopathy in chronic liver failure", url: "https://emcrit.org/ibcc/HE/#top" },
+                    { name: "Hepatic encephalopathy in acute liver failure", url: "https://emcrit.org/ibcc/alf/#neurology" },
+                    { name: "Hepatorenal syndrome (HRS-AKI)", url: "https://emcrit.org/ibcc/hrs/#top" },
+                    { name: "Spontaneous bacterial peritonitis (SBP)", url: "https://emcrit.org/ibcc/sbp/#top" },
+                    { name: "Critical care nutrition", url: "https://emcrit.org/ibcc/food/#top" },
+                    { name: "Refeeding syndrome", url: "https://emcrit.org/ibcc/refeeding/#top" },
+                    { name: "Pancreatitis", url: "https://emcrit.org/ibcc/pancreatitis/#top" }
+                ]
+            },
+            {
+                name: "Hematology & Oncology",
+                topics: [
+                    { name: "Anemia & hemoglobin transfusion targets", url: "https://emcrit.org/ibcc/transfusion/#top" },
+                    { name: "Massive Transfusion Protocol (MTP)", url: "https://emcrit.org/ibcc/mtp/#top" },
+                    { name: "Sickle cell anemia - acute chest syndrome", url: "https://emcrit.org/ibcc/sickle-chest/#top" },
+                    { name: "Anticoagulant reversal", url: "https://emcrit.org/ibcc/anticoagulant-reversal/#top" },
+                    { name: "Parenteral anticoagulants", url: "https://emcrit.org/ibcc/heparin/#top" },
+                    { name: "Coagulation studies (conventional & TEG)", url: "https://emcrit.org/ibcc/coag/#top" },
+                    { name: "Disseminated intravascular coagulation (DIC)", url: "https://emcrit.org/ibcc/dic/#top" },
+                    { name: "Purpura fulminans", url: "https://emcrit.org/ibcc/pf/#top" },
+                    { name: "Acute promyelocytic leukemia (APL)", url: "https://emcrit.org/ibcc/apl/#top" },
+                    { name: "CAR-T cell recipient", url: "https://emcrit.org/ibcc/cart/#top" },
+                    { name: "Immune-related adverse events from checkpoint inhibitors", url: "https://emcrit.org/ibcc/checkpoint/#top" },
+                    { name: "Tumor lysis syndrome", url: "https://emcrit.org/ibcc/tumor-lysis-syndrome/#top" },
+                    { name: "Thrombocytopenia", url: "https://emcrit.org/ibcc/thrombocytopenia/#top" },
+                    { name: "Catastrophic Antiphospholipid Syndrome (CAPS)", url: "https://emcrit.org/ibcc/caps/#top" },
+                    { name: "Hemophagocytic lymphohistiocytosis (HLH)", url: "https://emcrit.org/ibcc/hlh/#top" },
+                    { name: "Thrombotic microangiopathies (including TTP and HUS)", url: "https://emcrit.org/ibcc/tma/#top" }
+                ]
+            },
+            {
+                name: "Infectious Diseases",
+                topics: [
+                    { name: "Allergy to beta-lactam antibiotics", url: "https://emcrit.org/ibcc/penicillin/#top" },
+                    { name: "Antibiotics", url: "https://emcrit.org/ibcc/antibiotics/#top" },
+                    { name: "Antifungal agents", url: "https://emcrit.org/ibcc/antifungal/#top" },
+                    { name: "Approach to fever in the ICU", url: "https://emcrit.org/ibcc/fever/#top" },
+                    { name: "Septic shock", url: "https://emcrit.org/ibcc/sepsis/#top" },
+                    { name: "Biliary sepsis", url: "https://emcrit.org/ibcc/biliary/#top" },
+                    { name: "Candidiasis", url: "https://emcrit.org/ibcc/candida/#top" },
+                    { name: "C. difficile", url: "https://emcrit.org/ibcc/cdiff/#top" },
+                    { name: "Endocarditis", url: "https://emcrit.org/ibcc/endo/#top" },
+                    { name: "Epiglottitis", url: "https://emcrit.org/ibcc/epiglottitis/#top" },
+                    { name: "Influenza", url: "https://emcrit.org/ibcc/influenza/#top" },
+                    { name: "Line infection", url: "https://emcrit.org/ibcc/line/#top" },
+                    { name: "Meningitis & encephalitis", url: "https://emcrit.org/ibcc/meningitis/#top" },
+                    { name: "Necrotizing fasciitis", url: "https://emcrit.org/ibcc/necfas/#top" },
+                    { name: "Aspergillosis, invasive", url: "https://emcrit.org/ibcc/aspergillosis/#top" },
+                    { name: "Candida pneumonia", url: "https://emcrit.org/ibcc/candida/#Candida_pneumonia?" },
+                    { name: "Community-Acquired Pneumonia (CAP)", url: "https://emcrit.org/ibcc/pneumonia/#top" },
+                    { name: "Influenza", url: "https://emcrit.org/ibcc/influenza/#top" },
+                    { name: "Pneumocystis jiroveci pneumonia (PJP)", url: "https://emcrit.org/ibcc/pjp/#top" },
+                    { name: "Ventilator-associated pneumonia (VAP)", url: "https://emcrit.org/ibcc/vap/#top" },
+                    { name: "Spontaneous bacterial peritonitis", url: "https://emcrit.org/ibcc/sbp/#top" },
+                    { name: "Tickborne illnesses", url: "https://emcrit.org/ibcc/tick/#top" },
+                    { name: "Toxic Shock Syndrome", url: "https://emcrit.org/ibcc/tss/#top" },
+                    { name: "Community-acquired urosepsis", url: "https://emcrit.org/ibcc/urosepsis/#top" },
+                    { name: "Catheter-associated UTI (CAUTI)", url: "https://emcrit.org/ibcc/cauti/#top" }
+                ]
+            },
+            {
+                name: "Nephrology",
+                topics: [
+                    { name: "Diagnosis: approach to pH analysis", url: "https://emcrit.org/ibcc/ph/#top" },
+                    { name: "AGMA (Anion-Gap Metabolic Acidosis)", url: "https://emcrit.org/ibcc/agma/#top" },
+                    { name: "NAGMA (Non-Anion-Gap Metabolic Acidosis)", url: "https://emcrit.org/ibcc/nagma/#top" },
+{ name: "Metabolic alkalosis", url: "https://emcrit.org/ibcc/metabolic-alkalosis/#top" },
+    { name: "Respiratory acidosis (hypercapnia)", url: "https://emcrit.org/ibcc/hypercapnia/#top" },
+    { name: "Respiratory alkalosis (hypocapnia)", url: "https://emcrit.org/ibcc/hypocapnia/#top" },
+    { name: "AKI & oliguria", url: "https://emcrit.org/ibcc/acute-kidney-injury/#top" },
+    { name: "Hepatorenal syndrome", url: "https://emcrit.org/ibcc/hrs/#top" },
+    { name: "Rhabdomyolysis", url: "https://emcrit.org/ibcc/rhabdo/#top" },
+    { name: "Tumor lysis syndrome", url: "https://emcrit.org/ibcc/tumor-lysis-syndrome/#top" },
+    { name: "Contrast nephropathy myth", url: "https://emcrit.org/ibcc/contrast/#top" },
+    { name: "Hypernatremia", url: "https://emcrit.org/ibcc/hypernatremia/#top" },
+    { name: "Hyponatremia", url: "https://emcrit.org/ibcc/hyponatremia/#top" },
+    { name: "Hypokalemia", url: "https://emcrit.org/ibcc/hypokalemia/#top" },
+    { name: "Hyperkalemia", url: "https://emcrit.org/ibcc/hyperkalemia/#top" },
+    { name: "BRASH syndrome", url: "https://emcrit.org/ibcc/brash/#top" },
+    { name: "Hypocalcemia", url: "https://emcrit.org/ibcc/hypocalcemia/#top" },
+    { name: "Hypercalcemia", url: "https://emcrit.org/ibcc/hypercalcemia/#top" },
+    { name: "Hypomagnesemia", url: "https://emcrit.org/ibcc/hypomagnesemia/#top" },
+    { name: "Hypermagnesemia", url: "https://emcrit.org/ibcc/hypermagnesemia/#top" },
+    { name: "Hypophosphatemia", url: "https://emcrit.org/ibcc/hypophos/#top" },
+    { name: "Hyperphosphatemia", url: "https://emcrit.org/ibcc/hyperphos/#top" },
+    { name: "Fluid selection & pH-guided resuscitation", url: "https://emcrit.org/ibcc/fluid/#top" },
+    { name: "Deresuscitation: Dominating the diuresis", url: "https://emcrit.org/ibcc/diurese/#top" }
+]
+},
+{
+name: "Neurology",
+topics: [
+    { name: "Delirium", url: "https://emcrit.org/ibcc/delirium/#top" },
+    { name: "Stupor & Coma", url: "https://emcrit.org/ibcc/coma/#top" },
+    { name: "ICP elevation", url: "https://emcrit.org/ibcc/icp/#top" },
+    { name: "Brain death", url: "https://emcrit.org/ibcc/brain-death/#top" },
+    { name: "Neuro emergencies in pregnancy", url: "https://emcrit.org/ibcc/ob/" },
+    { name: "EEG", url: "https://emcrit.org/ibcc/eeg/#top" },
+    { name: "Neuro exam & lesion localization", url: "https://emcrit.org/ibcc/exam/" },
+    { name: "Neuroimaging", url: "https://emcrit.org/ibcc/rads/" },
+    { name: "Neuro-ultrasonography", url: "https://emcrit.org/ibcc/sono/#top" },
+    { name: "Analgesia and sedation", url: "https://emcrit.org/ibcc/pain/#top" },
+    { name: "Antiemetics", url: "https://emcrit.org/ibcc/antiemetic/#top" },
+    { name: "Management of the post-cardiac arrest patient", url: "https://emcrit.org/ibcc/post-arrest/#top" },
+    { name: "Neuroprognostication after anoxic brain injury", url: "https://emcrit.org/ibcc/np/" },
+    { name: "Central (neurogenic) fever", url: "https://emcrit.org/ibcc/fever/#neurogenic_fever" },
+    { name: "Takotsubo (stress) cardiomyopathy", url: "https://emcrit.org/ibcc/takotsubo/" },
+    { name: "Neurogenic pulmonary edema", url: "https://emcrit.org/ibcc/npe/#top" },
+    { name: "Approach to CNS infection", url: "https://emcrit.org/ibcc/id/" },
+    { name: "Meningitis/encephalitis", url: "https://emcrit.org/ibcc/meningitis/#top" },
+    { name: "Brain abscess", url: "https://emcrit.org/ibcc/ba/" },
+    { name: "Spinal Epidural Abscess (SEA)", url: "https://emcrit.org/ibcc/sea/" },
+    { name: "Viruses", url: "https://emcrit.org/ibcc/virus/" },
+    { name: "Neurological complications of COVID", url: "https://emcrit.org/ibcc/neurocovid/#top" },
+    { name: "Fungi", url: "https://emcrit.org/ibcc/fungal/" },
+    { name: "Unusual bacteria & mycobacteria", url: "https://emcrit.org/ibcc/bacteria/" },
+    { name: "Parasites & prions", url: "https://emcrit.org/ibcc/parasite/" },
+    { name: "Autoimmune encephalitis", url: "https://emcrit.org/ibcc/ae/#top" },
+    { name: "Acute demyelinating disorders", url: "https://emcrit.org/ibcc/myelin/#top" },
+    { name: "Movement disorders", url: "https://emcrit.org/ibcc/move/" },
+    { name: "Baclofen withdrawal & toxicity", url: "https://emcrit.org/ibcc/baclofen/" },
+    { name: "Catatonia", url: "https://emcrit.org/ibcc/catatonia/#top" },
+    { name: "Serotonin Syndrome", url: "https://emcrit.org/ibcc/serotonin/#top" },
+    { name: "Malignant hyperthermia", url: "https://emcrit.org/ibcc/mh/" },
+    { name: "Neuroleptic Malignant Syndrome", url: "https://emcrit.org/ibcc/nms/" },
+    { name: "Neuromuscular disorders & generalized weakness", url: "https://emcrit.org/ibcc/nm/" },
+    { name: "Guillain-Barre Syndrome (GBS)", url: "https://emcrit.org/ibcc/gbs/#top" },
+    { name: "Myasthenic crisis", url: "https://emcrit.org/ibcc/myasthenia/#top" },
+    { name: "Rhabdomyolysis", url: "https://emcrit.org/ibcc/rhabdo/" },
+    { name: "External Ventricular Drain (EVD)", url: "https://emcrit.org/ibcc/evd/#top" },
+    { name: "Post-craniectomy management & complications", url: "https://emcrit.org/ibcc/crani/#top" },
+    { name: "Neuro-oncology emergencies", url: "https://emcrit.org/ibcc/onc/" },
+    { name: "ICANS (CAR-T cell toxicity)", url: "https://emcrit.org/ibcc/cart/#immune_effector_cell-associated_neurotoxicity_syndrome_(ICANS)" },
+    { name: "Leptomeningeal carcinomatosis", url: "https://emcrit.org/ibcc/lepto/" },
+    { name: "Convulsive status epilepticus", url: "https://emcrit.org/ibcc/status-epilepticus/#top" },
+    { name: "Nonconvulsive status epilepticus (NCSE)", url: "https://emcrit.org/ibcc/ncse/" },
+    { name: "Spinal cord disorders", url: "https://emcrit.org/ibcc/cord/" },
+    { name: "Traumatic Spinal Cord Injury (SCI)", url: "https://emcrit.org/ibcc/sci/" },
+    { name: "Alcohol withdrawal", url: "https://emcrit.org/ibcc/etoh/#top" },
+    { name: "Wernicke encephalopathy", url: "https://emcrit.org/ibcc/wernicke/#top" },
+    { name: "Traumatic Brain Injury (TBI)", url: "https://emcrit.org/ibcc/tbi/#top" },
+    { name: "Paroxysmal sympathetic hyperactivity (PSH)", url: "https://emcrit.org/ibcc/psh/#top" },
+    { name: "Acute Ischemic Stroke (AIS)", url: "https://emcrit.org/ibcc/ais/" },
+    { name: "Cerebral Venous Thrombosis (CVT)", url: "https://emcrit.org/ibcc/cvt/#top" },
+    { name: "Cervical artery dissection (carotid & vertebral)", url: "https://emcrit.org/ibcc/dissection/" },
+    { name: "Intracranial hemorrhage", url: "https://emcrit.org/ibcc/ICH/#top" },
+    { name: "Subarachnoid hemorrhage (SAH)", url: "https://emcrit.org/ibcc/sah/#top" },
+    { name: "PRES (Posterior Reversible Encephalopathy Syndrome)", url: "https://emcrit.org/ibcc/pres/#top" },
+    { name: "RCVS (Reversible Cerebral Vasoconstriction Syndrome)", url: "https://emcrit.org/ibcc/rcvs/#top" }
+]
+},
+{
+name: "Obstetrics",
+topics: [
+    { name: "Cardiopulmonary disease in pregnancy", url: "https://emcrit.org/ibcc/preg/" },
+    { name: "Neurological emergencies in pregnancy", url: "https://emcrit.org/ibcc/ob/" },
+    { name: "Preeclampsia & HELLP syndrome", url: "https://emcrit.org/ibcc/preeclampsia/#top" },
+    { name: "Thrombotic microangiopathy in pregnancy", url: "https://emcrit.org/ibcc/tma/#TMA_in_pregnancy_or_postpartum" }
+]
+},
+{
+name: "Pulmonology",
+topics: [
+    { name: "Approach to pulmonary infection", url: "https://emcrit.org/ibcc/pulm-id/" },
+    { name: "ARDS", url: "https://emcrit.org/ibcc/ards/#top" },
+    { name: "Hypercapnia", url: "https://emcrit.org/ibcc/hypercapnia/#top" },
+    { name: "Hypocapnia", url: "https://emcrit.org/ibcc/hypocapnia/#top" },
+    { name: "Eosinophilic lung disease", url: "https://emcrit.org/ibcc/eosinophil/" },
+    { name: "Hemoptysis", url: "https://emcrit.org/ibcc/hemoptysis/#top" },
+    { name: "DAH (diffuse alveolar hemorrhage)", url: "https://emcrit.org/ibcc/dah/#top" },
+    { name: "SCAPE (Sympathetic Crashing Acute Pulmonary Edema)", url: "https://emcrit.org/ibcc/scape/#top" },
+    { name: "ABG, VBG, and pulse oximetry", url: "https://emcrit.org/ibcc/vbg/#top" },
+    { name: "Capnography and end-tidal CO2", url: "https://emcrit.org/ibcc/co2/#top" },
+    { name: "Diagnosis of acid-base disorders", url: "https://emcrit.org/ibcc/ph/#top" },
+    { name: "Pulmonary function tests (PFTs)", url: "https://emcrit.org/ibcc/pfts/" },
+    { name: "Other diagnostics & exam signs", url: "https://emcrit.org/ibcc/bedside/" },
+    { name: "Approach to thoracic imaging", url: "https://emcrit.org/ibcc/cxr/" },
+    { name: "Atelectasis", url: "https://emcrit.org/ibcc/atelectasis/#top" },
+    { name: "Cavitary lesions", url: "https://emcrit.org/ibcc/cavitation/#top" },
+    { name: "Consolidation", url: "https://emcrit.org/ibcc/consolidation/#top" },
+    { name: "Cystic lung disease", url: "https://emcrit.org/ibcc/cystic/#top" },
+    { name: "Distribution of abnormalities", url: "https://emcrit.org/ibcc/distribution/" },
+    { name: "GGO (ground glass opacification)", url: "https://emcrit.org/ibcc/ggo/#top" },
+    { name: "Lymphadenopathy", url: "https://emcrit.org/ibcc/lymphadenopathy/#top" },
+    { name: "Nodular patterns", url: "https://emcrit.org/ibcc/nodule/#top" },
+    { name: "Reticular patterns", url: "https://emcrit.org/ibcc/reticular/#top" },
+    { name: "ECMO", url: "https://emcrit.org/ibcc/ecmo/" },
+    { name: "Extubation", url: "https://emcrit.org/ibcc/extubation/#top" },
+    { name: "Immunosuppression", url: "https://emcrit.org/ibcc/immunosuppression/" },
+    { name: "Inhaled pulmonary vasodilators", url: "https://emcrit.org/ibcc/pulmvaso/#top" },
+    { name: "Lung transplantation", url: "https://emcrit.org/ibcc/lt/" },
+    { name: "Noninvasive respiratory support (CPAP, BiPAP, HFNC)", url: "https://emcrit.org/ibcc/support/#top" },
+    { name: "Smoking cessation", url: "https://emcrit.org/ibcc/smoking-cessation/" },
+    { name: "Asthma: Ambulatory & ward", url: "https://emcrit.org/ibcc/asthma-2/" },
+{ name: "Asthma in ICU", url: "https://emcrit.org/ibcc/asthma/#top" },
+    { name: "Bronchiectasis", url: "https://emcrit.org/ibcc/bronchiectasis/" },
+    { name: "Bronchiolitis", url: "https://emcrit.org/ibcc/bronchiolitis/" },
+    { name: "COPD: Ambulatory & ward", url: "https://emcrit.org/ibcc/copd/" },
+    { name: "COPD in ICU", url: "https://emcrit.org/ibcc/AECOPD/#top" },
+    { name: "Cystic Fibrosis exacerbation", url: "https://emcrit.org/ibcc/cystic-fibrosis/" },
+    { name: "Upper airway disease", url: "https://emcrit.org/ibcc/airway/" },
+    { name: "Vocal cord dysfunction", url: "https://emcrit.org/ibcc/vcd/#top" },
+    { name: "Aspiration", url: "https://emcrit.org/ibcc/aspiration/#top" },
+    { name: "Drug-induced lung disease", url: "https://emcrit.org/ibcc/drug-induced-lung-disease/" },
+    { name: "EVALI (E-cigarette or vaping associated lung injury)", url: "https://emcrit.org/ibcc/evali/" },
+    { name: "Fat emboli syndrome", url: "https://emcrit.org/ibcc/tbi/#fat_embolism" },
+    { name: "Pneumoconiosis", url: "https://emcrit.org/ibcc/pneumoconiosis/#top" },
+    { name: "CAP (community acquired pneumonia)", url: "https://emcrit.org/ibcc/pneumonia/#top" },
+    { name: "HAP (hospital acquired pneumonia)", url: "https://emcrit.org/ibcc/hap/" },
+    { name: "VAP (ventilator associated pneumonia)", url: "https://emcrit.org/ibcc/vap/#top" },
+    { name: "Lung abscess", url: "https://emcrit.org/ibcc/lung-abscess/" },
+    { name: "Typical pneumonias", url: "https://emcrit.org/ibcc/other-bacteria/" },
+    { name: "Atypical pneumonias", url: "https://emcrit.org/ibcc/bacterial-pneumonia/" },
+    { name: "Nocardia", url: "https://emcrit.org/ibcc/nocardia/" },
+    { name: "Actinomycosis", url: "https://emcrit.org/ibcc/actinomycosis/" },
+    { name: "Tuberculosis", url: "https://emcrit.org/ibcc/tuberculosis/" },
+    { name: "Non-tuberculous mycobacteria", url: "https://emcrit.org/ibcc/ntm/" },
+    { name: "Pneumocystis", url: "https://emcrit.org/ibcc/pjp/#top" },
+    { name: "Cryptococcus", url: "https://emcrit.org/ibcc/cryptococcus/" },
+    { name: "Blastomycosis", url: "https://emcrit.org/ibcc/blastomycosis/" },
+    { name: "Histoplasmosis", url: "https://emcrit.org/ibcc/histoplasmosis/" },
+    { name: "Coccidioidomycosis", url: "https://emcrit.org/ibcc/cocci/" },
+    { name: "Aspergillosis", url: "https://emcrit.org/ibcc/aspergillosis/#top" },
+    { name: "Mucormycosis", url: "https://emcrit.org/ibcc/aspergillosis/#invasive_pulmonary_mucormycosis" },
+    { name: "Candida", url: "https://emcrit.org/ibcc/candida/#Candida_pneumonia?" },
+    { name: "Influenza", url: "https://emcrit.org/ibcc/influenza/#top" },
+    { name: "Other viruses", url: "https://emcrit.org/ibcc/viral-pneumonia/" },
+    { name: "Acute exacerbation of ILD", url: "https://emcrit.org/ibcc/aeild/#top" },
+    { name: "Amyloidosis", url: "https://emcrit.org/ibcc/amyloid/#top" },
+    { name: "CT-ILD (connective tissue-related ILD)", url: "https://emcrit.org/ibcc/ctd-ild/" },
+    { name: "DAD (diffuse alveolar damage)", url: "https://emcrit.org/ibcc/dad/" },
+    { name: "DIP (desquamative interstitial pneumonitis)", url: "https://emcrit.org/ibcc/dip/#desquamative_interstitial_pneumonia_(DIP)" },
+    { name: "Eosinophilic lung disease", url: "https://emcrit.org/ibcc/eosinophil/" },
+    { name: "GLILD (granulomatous & lymphocytic ILD)", url: "https://emcrit.org/ibcc/pulm-id/#glild" },
+    { name: "HP (hypersensitivity pneumonitis)", url: "https://emcrit.org/ibcc/hp/" },
+    { name: "IgG4-related lung disease", url: "https://emcrit.org/ibcc/lymphoproliferative/#IgG4-related_lung_disease" },
+    { name: "IPF (idiopathic pulmonary fibrosis)", url: "https://emcrit.org/ibcc/ipf/" },
+    { name: "LIP (lymphocytic interstitial pneumonia)", url: "https://emcrit.org/ibcc/fb-lip/" },
+    { name: "Lipoid pneumonia", url: "https://emcrit.org/ibcc/aspiration/#(exogenous)_lipoid_pneumonia" },
+    { name: "NSIP (nonspecific interstitial pneumonia)", url: "https://emcrit.org/ibcc/nsip/" },
+    { name: "OP (organizing pneumonia)", url: "https://emcrit.org/ibcc/cop/" },
+    { name: "PAP (pulmonary alveolar proteinosis)", url: "https://emcrit.org/ibcc/pap/" },
+    { name: "PAM (pulmonary alveolar microlithiasis)", url: "https://emcrit.org/ibcc/calcium/#pulmonary_alveolar_microlithiasis_(PAM)" },
+    { name: "PPFE (pleuroparenchymal fibroelastosis)", url: "https://emcrit.org/ibcc/ppfe/" },
+    { name: "RBILD (respiratory bronchiolitis ILD)", url: "https://emcrit.org/ibcc/dip/#respiratory_bronchiolitis_interstitial_lung_disease_(RB-ILD)" },
+    { name: "Sarcoidosis", url: "https://emcrit.org/ibcc/sarcoidosis/" },
+    { name: "Lung cancer", url: "https://emcrit.org/ibcc/lung-cancer/" },
+    { name: "Lymphoproliferative disorders", url: "https://emcrit.org/ibcc/lymphoproliferative/" },
+    { name: "Pulmonary complications from malignancy", url: "https://emcrit.org/ibcc/pulm-cancer/#top" },
+    { name: "Neuromuscular disorders", url: "https://emcrit.org/ibcc/nm/" },
+    { name: "Guillain-Barre Syndrome (GBS)", url: "https://emcrit.org/ibcc/gbs/#top" },
+    { name: "Myasthenic crisis", url: "https://emcrit.org/ibcc/myasthenia/#top" },
+    { name: "Pleural effusion", url: "https://emcrit.org/ibcc/pleural/" },
+    { name: "Pneumothorax & bronchopleural fistula", url: "https://emcrit.org/ibcc/pneumothorax/" },
+    { name: "Pneumomediastinum", url: "https://emcrit.org/ibcc/pneumomediastinum/" },
+    { name: "Diagnosis of PE & tx of low-risk PE", url: "https://emcrit.org/ibcc/pulmonary-embolism/#top" },
+    { name: "Submassive/massive PE", url: "https://emcrit.org/ibcc/pe/#top" },
+    { name: "Pulmonary hypertension", url: "https://emcrit.org/ibcc/pah/" },
+    { name: "RV failure", url: "https://emcrit.org/ibcc/rv/#top" },
+    { name: "Pulmonary vasculitis & Diffuse alveolar hemorrhage", url: "https://emcrit.org/ibcc/dah/#top" },
+    { name: "Pulmonary AVMs & other vascular abnormalities", url: "https://emcrit.org/ibcc/pavm/" },
+    { name: "Sickle cell acute chest syndrome", url: "https://emcrit.org/ibcc/sickle-chest/#top" },
+    { name: "Superior vena cava syndrome (SVCs)", url: "https://emcrit.org/ibcc/svcs/#top" },
+    { name: "Pulmonary manifestations of systemic diseases", url: "https://emcrit.org/ibcc/systemic/#top" },
+    { name: "Cardiopulmonary disease in pregnancy", url: "https://emcrit.org/ibcc/preg/" },
+    { name: "Sleep-disordered breathing", url: "https://emcrit.org/ibcc/sleep/" },
+    { name: "Calcification & metastatic bone formation", url: "https://emcrit.org/ibcc/calcium/#top" }
+]
+},
+{
+name: "Rheumatology",
+topics: [
+    { name: "Allergy to beta-lactam antibiotics", url: "https://emcrit.org/ibcc/penicillin/#top" },
+    { name: "Anaphylaxis", url: "https://emcrit.org/ibcc/anaphylaxis/#top" },
+    { name: "Angioedema", url: "https://emcrit.org/ibcc/angioedema/#top" },
+    { name: "Catastrophic Antiphospholipid Syndrome (CAPS)", url: "https://emcrit.org/ibcc/caps/#top" },
+    { name: "Hemophagocytic lymphohistiocytosis (HLH)", url: "https://emcrit.org/ibcc/hlh/#top" },
+    { name: "Pulmonary vasculitis", url: "https://emcrit.org/ibcc/dah/#top" }
+]
+},
+{
+name: "Toxicology & Temperature",
+topics: [
+    { name: "Approach to the poisoned patient", url: "https://emcrit.org/ibcc/tox/#top" },
+    { name: "Hyperthermia", url: "https://emcrit.org/ibcc/hyperthermia/#top" },
+    { name: "Hypothermia", url: "https://emcrit.org/ibcc/hypothermia/#top" },
+    { name: "Acetaminophen", url: "https://emcrit.org/ibcc/acetaminophen/#top" },
+    { name: "Alcohols, toxic (ethylene glycol & methanol)", url: "https://emcrit.org/ibcc/alcohols/#top" },
+    { name: "Alcohol withdrawal", url: "https://emcrit.org/ibcc/etoh/#top" },
+    { name: "Wernicke encephalopathy", url: "https://emcrit.org/ibcc/wernicke/#top" },
+    { name: "Anticholinergics", url: "https://emcrit.org/ibcc/anticholinergic/#top" },
+    { name: "Baclofen withdrawal & toxicity", url: "https://emcrit.org/ibcc/baclofen/" },
+    { name: "Beta-blockers", url: "https://emcrit.org/ibcc/ccb/#top" },
+    { name: "Bupropion", url: "https://emcrit.org/ibcc/bupropion/#top" },
+    { name: "Calcium channel blockers", url: "https://emcrit.org/ibcc/ccb/#top" },
+    { name: "Carbon monoxide", url: "https://emcrit.org/ibcc/co/#top" },
+    { name: "Digoxin", url: "https://emcrit.org/ibcc/dig/#top" },
+    { name: "Lithium", url: "https://emcrit.org/ibcc/lithium/#top" },
+    { name: "Local Anesthetic Systemic Toxicity (LAST)", url: "https://emcrit.org/ibcc/last/#top" },
+    { name: "Malignant hyperthermia", url: "https://emcrit.org/ibcc/mh/#top" },
+    { name: "Metformin-associated lactic acidosis (MALA)", url: "https://emcrit.org/ibcc/metformin/#top" },
+    { name: "Methemoglobinemia", url: "https://emcrit.org/ibcc/methemoglobinemia/#top" },
+    { name: "Neuroleptic Malignant Syndrome (NMS)", url: "https://emcrit.org/ibcc/nms/#top" },
+    { name: "Opioid intoxication", url: "https://emcrit.org/ibcc/opioid/#top" },
+    { name: "Opioid withdrawal & buprenorphine", url: "https://emcrit.org/ibcc/buprenorphine/#top" },
+    { name: "Salicylate", url: "https://emcrit.org/ibcc/salicylates/#top" },
+    { name: "Serotonin Syndrome", url: "https://emcrit.org/ibcc/serotonin/#top" },
+    { name: "Sodium channel blockers", url: "https://emcrit.org/ibcc/nacb/#top" },
+    { name: "Sympathomimetics", url: "https://emcrit.org/ibcc/symp/#top" },
+    { name: "Tricyclic antidepressants", url: "https://emcrit.org/ibcc/nacb/#top" },
+    { name: "Valproic Acid", url: "https://emcrit.org/ibcc/vpa/#top" }
+]
+}
+];
+
+        function createSystemElement(system, index) {
+            const systemDiv = document.createElement('div');
+            systemDiv.className = 'system';
+            systemDiv.innerHTML = `
+                <div class="system-header" data-index="${index}">
+                    <h2>${system.name}</h2>
+                    <a href="#top" class="back-to-top">↑ Top</a>
+                </div>
+                <div class="system-content">
+                    <ul>
+                        ${system.topics.map(topic => `
+                            <li>
+                                <a href="${topic.url}" target="_blank" rel="noopener noreferrer">${topic.name}</a>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `;
+            return systemDiv;
+        }
+
+        function renderSystems() {
+            const content = document.getElementById('content');
+            systems.forEach((system, index) => {
+                content.appendChild(createSystemElement(system, index));
+            });
+        }
+
+        function normalize(text) {
+            return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        function highlightMatch(element, searchTerm) {
+            const regex = new RegExp(`(${searchTerm})`, 'gi');
+            element.innerHTML = element.textContent.replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function toggleSystemContent(systemContent, active) {
+            systemContent.classList.toggle('active', active);
+        }
+
+        function performSearch() {
+            const searchBox = document.getElementById('search');
+            const searchTerms = normalize(searchBox.value).split(/\s+/).filter(term => term.length > 0);
+            
+            systems.forEach((system, systemIndex) => {
+                const systemElement = document.querySelectorAll('.system')[systemIndex];
+                const systemContent = systemElement.querySelector('.system-content');
+                let systemVisible = false;
+                
+                system.topics.forEach((topic, topicIndex) => {
+                    const topicElement = systemContent.querySelectorAll('li')[topicIndex];
+                    const topicText = normalize(topic.name);
+                    const matchesAllTerms = searchTerms.every(term => topicText.includes(term));
+                    
+                    if (matchesAllTerms || searchTerms.length === 0) {
+                        topicElement.style.display = 'block';
+                        systemVisible = true;
+                        if (searchTerms.length > 0) {
+                            highlightMatch(topicElement.querySelector('a'), searchTerms.join('|'));
+                        } else {
+                            topicElement.querySelector('a').innerHTML = topic.name;
+                        }
+                    } else {
+                        topicElement.style.display = 'none';
+                    }
+                });
+                
+                systemElement.style.display = systemVisible ? 'block' : 'none';
+                toggleSystemContent(systemContent, systemVisible && searchTerms.length > 0);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSystems();
+            const searchBox = document.getElementById('search');
+            searchBox.addEventListener('input', debounce(performSearch, 300));
+
+            document.addEventListener('click', (event) => {
+                if (event.target.closest('.system-header')) {
+                    const systemIndex = event.target.closest('.system-header').dataset.index;
+                    const systemContent = document.querySelectorAll('.system-content')[systemIndex];
+                    toggleSystemContent(systemContent);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
